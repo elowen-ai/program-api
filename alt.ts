@@ -6,7 +6,7 @@ import {
 
 const router = Router();
 
-router.get("/initialize", async (req, res) => {
+router.post("/initialize", async (req, res) => {
     try {
         const signature = await signAndSendTransaction(
             await createAddressLookupTableTransaction(),
