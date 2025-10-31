@@ -1,5 +1,3 @@
-import models from "../../db";
-import type { Server } from "socket.io";
 import {
     listenBuyPremiumEvent,
     listenBuyPresaleTokenEvent,
@@ -7,13 +5,24 @@ import {
     listenElwBurnEvent,
     listenTransactions,
 } from "@elowen-ai/program";
+import models from "../../db";
+import type { Namespace, Server } from "socket.io";
+import Transactions from "../../db/models/Transactions";
 
-export default function (io: Server) {
+export default function (io: Server | Namespace) {
     listenTransactions(transaction => {
+        // Check every key for transaction object
+        const keys = Object.keys(Transactions.fields);
+        for (const key of keys) {
+            if (!(key in transaction) && key !== "details") {
+                return;
+            }
+        }
+
         io.emit("transaction", transaction);
         new models.instance.transactions({
             ...transaction,
-            details: JSON.stringify(transaction.details),
+            details: JSON.stringify(transaction?.details || {}),
         }).saveAsync();
     });
 
